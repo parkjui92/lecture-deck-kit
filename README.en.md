@@ -10,6 +10,8 @@ A [Claude Code](https://claude.com/claude-code) plugin that builds your lecture 
 
 Highlight the sentence you want changed, type something like "make this less stiff", and that spot gets fixed and the page refreshes. You stay on the slide you were looking at.
 
+![A sentence is dragged to select it, an instruction is typed, and that sentence alone changes while the slide stays put](docs/live-edit-demo.gif)
+
 ## What makes it different
 
 The thing you want to fix is right there on screen, but **describing where it is takes longer than fixing it.** If you've ever typed "you know that second line on slide 3, the end of it…" into a chat window, you know the feeling. The tedious part was never the writing. It was the pointing.
