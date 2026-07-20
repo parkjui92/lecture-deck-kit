@@ -1,0 +1,10 @@
+.DS_Store
+_workspace/
+__pycache__/
+*.pyc
+.env
+
+# 라이브 편집 런타임 산출물 (프로젝트별로 생기는 것 — 저장소에 넣지 않는다)
+feedback/
+versions/
+*.pre-adopt.bak

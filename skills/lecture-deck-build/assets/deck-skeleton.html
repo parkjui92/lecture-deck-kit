@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="ko" data-lle-runtime data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>강의 제목 — 부제</title>
+<!--
+  lecture-deck-build 표준 골격.
+
+  규약 (라이브 편집이 이 규약 위에서 돌아간다):
+    · 슬라이드 1장 = section.slide 요소이며 data-sid 속성이 반드시 있어야 한다.
+    · data-sid 는 한 번 부여하면 영구 고정. 표시 번호는 런타임이 계산한다.
+      슬라이드를 쪼갤 때 앞쪽이 기존 sid 를 승계하고 뒤쪽은 sNN-2 를 새로 받는다.
+      (재번호를 매기면 대기 중인 피드백이 엉뚱한 슬라이드를 가리키게 된다)
+    · 발표자 노트는 aside.notes 안에 쓴다 (N 키로 열람).
+    · 외부 CDN·폰트·이미지를 참조하지 않는다 — 파일 하나로 오프라인·배포 모두 동작.
+
+  조작: ← → Space 이동 · O 목차 · N 노트 · T 테마 · F 전체화면 · ? 도움말 · 숫자+Enter 점프
+-->
+<style>
+:root{
+  --bg:#f7f8fb; --panel:#ffffff; --ink:#101728; --muted:#5b6478; --line:#e3e7ef;
+  --accent:#3b5bdb; --accent-soft:#e8ecfd; --accent-2:#0d9488; --warn:#b45309;
+  --shadow:0 18px 50px rgba(16,23,40,.10); --radius:16px;
+  --stage-w:1280px; --stage-h:720px;
+}
+html[data-theme="dark"]{
+  --bg:#0b1020; --panel:#121a2e; --ink:#eaeefb; --muted:#9aa6c2; --line:#243150;
+  --accent:#7c93ff; --accent-soft:#1b2545; --accent-2:#2dd4bf; --warn:#fbbf24;
+  --shadow:0 22px 60px rgba(0,0,0,.45);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:var(--bg); color:var(--ink); overflow:hidden;
+  font-family:"Pretendard","Apple SD Gothic Neo",-apple-system,BlinkMacSystemFont,
+              "Malgun Gothic","Noto Sans KR",sans-serif;
+  word-break:keep-all; line-height:1.6;
+  display:flex; align-items:center; justify-content:center;
+  -webkit-font-smoothing:antialiased;
+}
+#viewport{position:relative;width:100%;height:100%;display:flex;align-items:center;justify-content:center}
+#stage{
+  position:relative; width:var(--stage-w); height:var(--stage-h);
+  background:var(--panel); border-radius:var(--radius); box-shadow:var(--shadow);
+  overflow:hidden; transform-origin:center center;
+}
+
+/* ── 슬라이드 ─────────────────────────────────────────── */
+.slide{
+  position:absolute; inset:0; padding:64px 76px 76px;
+  display:none; flex-direction:column; gap:22px;
+  opacity:0; transition:opacity .22s ease;
+}
+.slide.active{display:flex; opacity:1}
+.slide > h2{
+  font-size:40px; font-weight:800; letter-spacing:-.02em; line-height:1.25;
+  text-wrap:balance; padding-bottom:14px; border-bottom:3px solid var(--accent);
+  align-self:flex-start; max-width:100%;
+}
+.slide .kicker{
+  font-size:15px; font-weight:700; color:var(--accent); letter-spacing:.06em;
+  text-transform:uppercase;
+}
+.slide .lead{font-size:23px; line-height:1.62; color:var(--ink); text-wrap:pretty}
+.slide .sub{font-size:17.5px; color:var(--muted)}
+.slide .fill{flex:1}
+
+/* 표지 · 간지 */
+.slide.cover{justify-content:center; align-items:flex-start; gap:26px;
+  background:linear-gradient(150deg,var(--accent-soft) 0%,var(--panel) 62%)}
+.slide.cover h1{font-size:60px;font-weight:800;letter-spacing:-.03em;line-height:1.2;text-wrap:balance}
+.slide.cover .meta{font-size:17px;color:var(--muted);display:flex;gap:18px;flex-wrap:wrap}
+.slide.divider{justify-content:center;align-items:center;text-align:center;
+  background:var(--accent);color:#fff}
+.slide.divider h2{border:0;font-size:52px;color:#fff;align-self:center}
+.slide.divider .sub{color:rgba(255,255,255,.86)}
+
+/* 본문 요소 */
+ul.bullets{list-style:none;display:flex;flex-direction:column;gap:15px;font-size:20.5px}
+ul.bullets li{position:relative;padding-left:30px;text-wrap:pretty}
+ul.bullets li::before{
+  content:"";position:absolute;left:6px;top:.62em;width:9px;height:9px;
+  border-radius:3px;background:var(--accent);transform:rotate(45deg)
+}
+ul.bullets li .note{display:block;font-size:16.5px;color:var(--muted);margin-top:4px}
+
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:22px;flex:1}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.card{
+  background:var(--bg); border:1px solid var(--line); border-radius:13px;
+  padding:22px 24px; display:flex; flex-direction:column; gap:9px;
+}
+.card h3{font-size:20px;font-weight:750;letter-spacing:-.01em}
+.card p{font-size:16.5px;color:var(--muted);text-wrap:pretty}
+.card.accent{border-color:var(--accent);background:var(--accent-soft)}
+
+.stat{display:flex;flex-direction:column;gap:2px}
+.stat .num{font-size:46px;font-weight:800;color:var(--accent);letter-spacing:-.02em}
+.stat .cap{font-size:15.5px;color:var(--muted)}
+
+table{width:100%;border-collapse:collapse;font-size:17px}
+th,td{padding:12px 14px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:var(--accent-soft);font-weight:750;font-size:15.5px;color:var(--ink)}
+td.em{font-weight:700;color:var(--accent)}
+tr:last-child td{border-bottom:0}
+
+.callout{
+  border-left:4px solid var(--accent); background:var(--accent-soft);
+  padding:18px 22px; border-radius:0 12px 12px 0; font-size:18.5px; text-wrap:pretty;
+}
+.callout.warn{border-color:var(--warn);background:color-mix(in srgb,var(--warn) 12%,transparent)}
+
+.flow{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.flow .step{flex:1;min-width:150px;background:var(--bg);border:1px solid var(--line);
+  border-radius:12px;padding:16px 18px;font-size:16.5px}
+.flow .step b{display:block;font-size:14px;color:var(--accent);margin-bottom:5px}
+.flow .arrow{color:var(--muted);font-size:22px}
+
+.src{font-size:13.5px;color:var(--muted);margin-top:auto}
+
+/* ── 크롬(진행바·번호·노트·목차) ────────────────────── */
+#bar{position:fixed;left:0;top:0;height:3px;background:var(--accent);width:0;
+  transition:width .22s ease;z-index:40}
+#num{position:fixed;right:18px;bottom:14px;font-size:13px;color:var(--muted);
+  font-variant-numeric:tabular-nums;z-index:40}
+#notes{
+  position:fixed;left:0;right:0;bottom:0;max-height:34vh;overflow:auto;display:none;
+  background:var(--panel);border-top:1px solid var(--line);padding:18px 26px;
+  font-size:15.5px;color:var(--muted);box-shadow:0 -10px 30px rgba(0,0,0,.12);z-index:45;
+}
+#notes.on{display:block}
+#notes b{color:var(--ink)}
+.notes{display:none}
+#overview{
+  position:fixed;inset:0;background:color-mix(in srgb,var(--bg) 96%,transparent);
+  backdrop-filter:blur(6px);display:none;flex-direction:column;padding:44px 8vw;z-index:60;overflow:auto
+}
+#overview.on{display:flex}
+#overview h4{font-size:14px;color:var(--muted);letter-spacing:.08em;margin-bottom:16px}
+#ovlist{display:flex;flex-direction:column;gap:4px}
+#ovlist button{
+  display:flex;gap:14px;align-items:baseline;text-align:left;width:100%;
+  padding:10px 14px;border:0;background:none;border-radius:9px;cursor:pointer;
+  font:inherit;font-size:16.5px;color:var(--ink)
+}
+#ovlist button:hover{background:var(--accent-soft)}
+#ovlist button.cur{background:var(--accent);color:#fff}
+#ovlist .n{font-size:13px;color:var(--muted);min-width:30px;font-variant-numeric:tabular-nums}
+#ovlist button.cur .n{color:rgba(255,255,255,.8)}
+#help{
+  position:fixed;inset:0;display:none;align-items:center;justify-content:center;
+  background:rgba(6,10,22,.62);z-index:70
+}
+#help.on{display:flex}
+#help div{background:var(--panel);border-radius:16px;padding:30px 36px;font-size:16px;
+  box-shadow:var(--shadow);display:flex;flex-direction:column;gap:9px}
+#help kbd{background:var(--bg);border:1px solid var(--line);border-radius:6px;
+  padding:2px 8px;font-size:14px;font-family:ui-monospace,Menlo,monospace}
+
+@media print{
+  body{overflow:visible;display:block;background:#fff}
+  #stage{transform:none!important;width:100%;height:auto;box-shadow:none;border-radius:0}
+  .slide{position:relative;display:flex!important;opacity:1!important;
+    page-break-after:always;height:190mm;border-bottom:1px solid #ddd}
+  #bar,#num,#notes,#overview,#help{display:none!important}
+}
+</style>
+</head>
+<body>
+<div id="viewport">
+  <main id="stage">
+
+    <!-- 표지 -->
+    <section class="slide cover active" data-sid="s01">
+      <span class="kicker">강의 · 2026</span>
+      <h1>강의 제목을 여기에<br>두 줄까지 쓸 수 있습니다</h1>
+      <p class="lead" style="max-width:760px">부제 — 이 강의가 청중에게 무엇을 남기는지 한 문장으로.</p>
+      <div class="meta"><span>발표자 이름</span><span>소속</span><span>2026. 00. 00.</span></div>
+      <aside class="notes">인사와 함께 오늘 다룰 것을 한 문장으로 예고한다.</aside>
+    </section>
+
+    <!-- 목차 -->
+    <section class="slide" data-sid="s02">
+      <h2>오늘 다룰 것</h2>
+      <ul class="bullets">
+        <li>첫 번째 축 <span class="note">왜 지금 이 문제인가</span></li>
+        <li>두 번째 축 <span class="note">무엇이 실제로 작동하는가</span></li>
+        <li>세 번째 축 <span class="note">내일부터 무엇을 할 것인가</span></li>
+      </ul>
+      <aside class="notes">세 축의 연결 고리를 미리 말해 두면 뒤가 편하다.</aside>
+    </section>
+
+    <!-- 간지 -->
+    <section class="slide divider" data-sid="s03">
+      <h2>1. 왜 지금인가</h2>
+      <p class="sub">문제의 규모와 시급성</p>
+    </section>
+
+    <!-- 핵심 메시지 + 근거 -->
+    <section class="slide" data-sid="s04">
+      <h2>한 장에 메시지는 하나</h2>
+      <p class="lead">헤드 메시지를 여기에 한 문장으로 단언한다. 나머지는 전부 이 문장의 근거다.</p>
+      <div class="grid-3">
+        <div class="card"><div class="stat"><span class="num">62%</span><span class="cap">근거 지표 1</span></div></div>
+        <div class="card"><div class="stat"><span class="num">3.4배</span><span class="cap">근거 지표 2</span></div></div>
+        <div class="card"><div class="stat"><span class="num">18개월</span><span class="cap">근거 지표 3</span></div></div>
+      </div>
+      <p class="src">출처: 기관명(2025), 「보고서명」, 표 3.</p>
+      <aside class="notes">수치는 반드시 출처와 함께. 청중이 물어볼 수 있는 한 가지를 미리 준비한다.</aside>
+    </section>
+
+    <!-- 대비형 표 -->
+    <section class="slide" data-sid="s05">
+      <h2>대비가 이해를 만든다</h2>
+      <table>
+        <thead><tr><th style="width:22%">구분</th><th>기존 방식</th><th>제안 방식</th></tr></thead>
+        <tbody>
+          <tr><td class="em">관점</td><td>무엇을 했는가</td><td>무엇이 바뀌었는가</td></tr>
+          <tr><td class="em">근거</td><td>사례 중심</td><td>지표 + 사례</td></tr>
+          <tr><td class="em">한계</td><td>재현이 어려움</td><td>절차로 고정</td></tr>
+        </tbody>
+      </table>
+      <div class="callout">표는 나열이 아니라 <b>대비</b>일 때 힘이 생긴다. 열은 셋을 넘기지 않는다.</div>
+      <aside class="notes">표를 읽어주지 말고, 표에서 무엇을 봐야 하는지만 짚는다.</aside>
+    </section>
+
+    <!-- 흐름도 -->
+    <section class="slide" data-sid="s06">
+      <h2>절차는 흐름으로</h2>
+      <div class="flow">
+        <div class="step"><b>1단계</b>입력을 모은다</div><span class="arrow">→</span>
+        <div class="step"><b>2단계</b>기준으로 거른다</div><span class="arrow">→</span>
+        <div class="step"><b>3단계</b>결과를 검증한다</div>
+      </div>
+      <div class="grid-2">
+        <div class="card accent"><h3>잘 되는 경우</h3><p>조건이 갖춰졌을 때 기대할 수 있는 결과.</p></div>
+        <div class="card"><h3>주의할 경우</h3><p>실패하기 쉬운 지점과 그 신호.</p></div>
+      </div>
+      <aside class="notes">단계마다 실패 신호를 하나씩 말해주면 신뢰가 올라간다.</aside>
+    </section>
+
+    <!-- 마무리 -->
+    <section class="slide" data-sid="s07">
+      <h2>정리 — 오늘 가져갈 세 가지</h2>
+      <ul class="bullets">
+        <li>첫째, 청중이 내일 바로 쓸 수 있는 것</li>
+        <li>둘째, 오해를 바로잡는 것</li>
+        <li>셋째, 다음에 스스로 찾아볼 수 있는 실마리</li>
+      </ul>
+      <div class="callout">질문·문의: 연락처 또는 자료 링크</div>
+      <aside class="notes">마지막 장은 요약이 아니라 '행동'으로 끝낸다.</aside>
+    </section>
+
+  </main>
+</div>
+
+<div id="bar"></div>
+<div id="num"></div>
+<div id="notes"></div>
+<div id="overview"><h4>목차 — 클릭하면 이동 (O 로 닫기)</h4><div id="ovlist"></div></div>
+<div id="help"><div>
+  <div><kbd>←</kbd> <kbd>→</kbd> <kbd>Space</kbd> 이동</div>
+  <div><kbd>O</kbd> 목차 · <kbd>N</kbd> 발표자 노트</div>
+  <div><kbd>T</kbd> 밝게/어둡게 · <kbd>F</kbd> 전체화면</div>
+  <div><kbd>숫자</kbd>+<kbd>Enter</kbd> 해당 장으로</div>
+  <div><kbd>?</kbd> 이 도움말 닫기</div>
+</div></div>
+
+<script>
+(function(){
+  var stage=document.getElementById('stage');
+  var slides=[].slice.call(stage.querySelectorAll('.slide'));
+  var bar=document.getElementById('bar'), num=document.getElementById('num');
+  var notes=document.getElementById('notes'), overview=document.getElementById('overview');
+  var ovlist=document.getElementById('ovlist'), help=document.getElementById('help');
+  var cur=0, jump='';
+
+  function fit(){
+    var pad = window.innerWidth<700 ? 8 : 28;
+    var k=Math.min((window.innerWidth-pad*2)/1280,(window.innerHeight-pad*2)/720);
+    stage.style.transform='scale('+k+')';
+  }
+  window.addEventListener('resize',fit); fit();
+
+  function render(){
+    slides.forEach(function(s,i){ s.classList.toggle('active', i===cur); });
+    bar.style.width=((cur+1)/slides.length*100)+'%';
+    num.textContent=(cur+1)+' / '+slides.length;
+    var n=slides[cur].querySelector('.notes');
+    notes.innerHTML=n?('<b>발표자 노트</b><br>'+n.innerHTML):'<b>발표자 노트</b><br>—';
+    var sid=slides[cur].getAttribute('data-sid');
+    if(sid && location.hash.slice(1)!==sid) history.replaceState(null,'','#'+sid);
+    [].forEach.call(ovlist.children,function(b,i){ b.classList.toggle('cur',i===cur); });
+  }
+  function go(i){ cur=Math.max(0,Math.min(i,slides.length-1)); render(); }
+
+  slides.forEach(function(s,i){
+    var b=document.createElement('button');
+    var h=s.querySelector('h1,h2');
+    b.innerHTML='<span class="n">'+(i+1)+'</span><span>'+(h?h.textContent:'(제목 없음)')+'</span>';
+    b.addEventListener('click',function(){ go(i); overview.classList.remove('on'); });
+    ovlist.appendChild(b);
+  });
+
+  function fromHash(){
+    var sid=location.hash.slice(1); if(!sid) return false;
+    for(var i=0;i<slides.length;i++){
+      if(slides[i].getAttribute('data-sid')===sid){ cur=i; return true; }
+    }
+    return false;
+  }
+  window.addEventListener('hashchange',function(){ if(fromHash()) render(); });
+
+  document.addEventListener('keydown',function(e){
+    var t=e.target;
+    if(t && (t.isContentEditable || /INPUT|TEXTAREA|SELECT/.test(t.tagName||''))) return;
+    if(e.metaKey||e.ctrlKey||e.altKey) return;
+    var k=e.key;
+    if(k>='0'&&k<='9'){ jump+=k; return; }
+    if(k==='Enter'&&jump){ go(parseInt(jump,10)-1); jump=''; return; }
+    if(k==='ArrowRight'||k==='PageDown'||k===' '){ e.preventDefault(); go(cur+1); }
+    else if(k==='ArrowLeft'||k==='PageUp'){ e.preventDefault(); go(cur-1); }
+    else if(k==='Home'){ go(0); } else if(k==='End'){ go(slides.length-1); }
+    else if(k==='o'||k==='O'||k==='ㅐ'){ overview.classList.toggle('on'); }
+    else if(k==='n'||k==='N'||k==='ㅜ'){ notes.classList.toggle('on'); }
+    else if(k==='t'||k==='T'||k==='ㅅ'){
+      var d=document.documentElement;
+      d.setAttribute('data-theme', d.getAttribute('data-theme')==='dark'?'light':'dark');
+    }
+    else if(k==='f'||k==='F'||k==='ㄹ'){
+      if(document.fullscreenElement) document.exitFullscreen();
+      else document.documentElement.requestFullscreen();
+    }
+    else if(k==='?'||k==='/'){ help.classList.toggle('on'); }
+    else if(k==='Escape'){ overview.classList.remove('on'); help.classList.remove('on'); }
+    jump='';
+  });
+
+  overview.addEventListener('click',function(e){ if(e.target===overview) overview.classList.remove('on'); });
+  help.addEventListener('click',function(){ help.classList.remove('on'); });
+
+  fromHash();
+  render();
+})();
+</script>
+</body>
+</html>
