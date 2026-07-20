@@ -147,6 +147,9 @@
   forceSelect.setAttribute('data-lle-injected', '');
   forceSelect.textContent =
     '*,*::before,*::after{-webkit-user-select:text!important;user-select:text!important;}' +
+    // 트랙패드 가로 스와이프가 브라우저 뒤로가기로 먹히는 것을 막는다.
+    // 문장을 드래그해 선택할 때 가로 성분이 조금만 섞여도 페이지가 넘어가 버린다.
+    'html,body{overscroll-behavior-x:none;overscroll-behavior-y:contain;}' +
     '#lecture-live-edit-host{position:fixed;inset:0;width:0;height:0;z-index:2147483000;}';
   document.head.appendChild(forceSelect);
 
@@ -618,7 +621,9 @@
       }));
     } catch (e) {}
     if (deck && cur && cur.sid && document.documentElement.hasAttribute('data-lle-runtime')) {
-      location.hash = cur.sid;   // 표준 골격은 해시로 곧장 복원된다
+      // 표준 골격은 해시로 곧장 복원된다. 단, `location.hash = …` 는 히스토리 항목을 쌓아
+      // 뒤로가기 한 번에 엉뚱한 슬라이드로 튀게 만들므로 replaceState 로 갈아 끼운다.
+      history.replaceState(null, '', '#' + cur.sid);
     }
     location.reload();
   }

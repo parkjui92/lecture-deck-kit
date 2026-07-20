@@ -1,7 +1,7 @@
 {
   "name": "lecture-deck-kit",
   "description": "브라우저에 띄운 강의자료를 화면에서 바로 고치는 플러그인. 인터뷰 → 구성안 승인 게이트 → 자기완결 HTML 슬라이드덱 빌드 → 라이브 편집 → 배포까지 한 파이프라인. 수정할 곳을 채팅에 '3번 슬라이드가…'라고 말로 지목하는 대신 화면에서 문장을 드래그 선택해 지시하면, Claude가 그 자리를 찾아 고치고 화면이 자동 갱신된다. 편집 오버레이는 응답 시점에만 주입되어 산출물 HTML은 항상 배포 가능한 클린 상태로 남는다. Live-edit your HTML lecture slides in the browser: highlight the sentence you want changed, say how, and it is fixed and refreshed in place — with the deliverable file always staying clean.",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "author": {
     "name": "Jui Park",
     "url": "https://github.com/parkjui92"

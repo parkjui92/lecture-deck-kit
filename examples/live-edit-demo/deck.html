@@ -30,7 +30,9 @@ html[data-theme="dark"]{
   --shadow:0 22px 60px rgba(0,0,0,.45);
 }
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%}
+/* overscroll-behavior-x: 트랙패드 가로 스와이프가 브라우저 뒤로가기로 먹히는 것을 막는다.
+   (발표 중에도, 문장을 드래그해 선택할 때도 페이지가 넘어가지 않는다) */
+html,body{height:100%;overscroll-behavior-x:none}
 body{
   background:var(--bg); color:var(--ink); overflow:hidden;
   font-family:"Pretendard","Apple SD Gothic Neo",-apple-system,BlinkMacSystemFont,

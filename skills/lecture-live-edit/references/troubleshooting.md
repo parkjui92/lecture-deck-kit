@@ -28,7 +28,7 @@ lsof -nP -iTCP:4601 -sTCP:LISTEN          # 누가 쓰는지
 큐에는 들어갔는지부터 본다 — **들어갔다면 아무것도 잃지 않은 상태다.**
 
 ```bash
-python3 "$TOOL"/lle.py status --root <폴더>      # $TOOL 은 lecture-live-edit 스킬의 scripts/ 폴더
+python3 ~/.claude/tools/lecture-live-edit/lle.py status --root <폴더>
 ```
 - `pending` 이 올라가 있다 → Monitor 만 죽은 것. 드레인부터 하고 Monitor 를 재장전한다.
 - `pending` 이 0이고 `queued` 도 그대로 → 전송 자체가 실패. 오버레이 상태 필이
@@ -43,6 +43,25 @@ Monitor 는 세션이 끝나면 사라진다. 새 세션에서는 반드시 재�
 - **계속 된다**: `done` 을 편집 도중 여러 번 실행했다. 마지막에 한 번만 실행한다.
 - 지시 입력창이 열려 있는 동안에는 새로고침이 **유예**된다("반영 완료 — 창을 닫으면 갱신됩니다").
   정상 동작이다.
+
+## 문장을 드래그해 선택하면 슬라이드가 앞뒤로 튄다
+
+macOS 트랙패드의 **두 손가락 가로 스와이프가 브라우저 뒤로/앞으로 가기**로 먹히는 것이 원인이다.
+문장을 긁을 때 가로 성분이 조금만 섞여도 발동한다. 히스토리에 슬라이드 해시가 쌓여 있으면
+뒤로가기 한 번이 곧 "다른 슬라이드로 점프"가 된다.
+
+v0.9.1에서 양쪽을 막았다.
+- 덱과 오버레이 모두 `html, body { overscroll-behavior-x: none }` 을 건다 → 스와이프 제스처 자체가 무효.
+- 자동 새로고침 시 `location.hash = …` 대신 `history.replaceState` 를 쓴다 → 히스토리가 쌓이지 않는다.
+
+여전히 튄다면 확인할 것:
+
+```js
+getComputedStyle(document.documentElement).overscrollBehaviorX   // 'none' 이어야 한다
+```
+
+`none` 이 아니면 오래된 덱이다. 덱 CSS의 `html,body` 규칙에 `overscroll-behavior-x:none` 을 추가한다
+(서버를 거쳐 열었다면 오버레이가 이미 걸어 주므로, 파일을 직접 연 경우에만 문제가 된다).
 
 ## 새로고침 후 다른 슬라이드로 튄다
 
