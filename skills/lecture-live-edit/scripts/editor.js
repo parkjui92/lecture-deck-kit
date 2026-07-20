@@ -153,6 +153,27 @@
     '#lecture-live-edit-host{position:fixed;inset:0;width:0;height:0;z-index:2147483000;}';
   document.head.appendChild(forceSelect);
 
+  // 트랙패드 두 손가락 가로 스와이프 = 브라우저 뒤로/앞으로 가기.
+  // 문장을 드래그해 선택할 때 가로 성분이 조금만 섞여도 발동해 보던 슬라이드에서 튕겨 나간다.
+  // overscroll-behavior 만으로는 환경에 따라 막히지 않으므로 제스처 자체를 취소한다.
+  function scrollableX(node) {
+    var el = (node && node.nodeType === 3) ? node.parentElement : node;
+    while (el && el !== document.body && el !== document.documentElement) {
+      if (el.scrollWidth > el.clientWidth + 1) {
+        var ox = getComputedStyle(el).overflowX;
+        if (ox === 'auto' || ox === 'scroll') return true;   // 진짜 가로 스크롤 영역은 살려 둔다
+      }
+      el = el.parentElement;
+    }
+    return false;
+  }
+
+  window.addEventListener('wheel', function (e) {
+    if (Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return;     // 세로 스크롤은 건드리지 않는다
+    if (scrollableX(e.target)) return;
+    e.preventDefault();
+  }, { passive: false, capture: true });
+
   shadow.innerHTML = [
     '<style>',
     ':host{all:initial;}',
@@ -652,7 +673,7 @@
 
     // 덱마다 내부 인덱스가 있으므로 클래스를 직접 건드리지 않고
     // 방향키 이벤트를 흘려보내 덱 자신이 이동하게 한다 (어떤 덱에서도 통한다).
-    var guard = 0;
+    var guard = 0, lastDir = 0;
     (function step() {
       var fresh = collectUnits();
       var cur = -1;
@@ -661,6 +682,9 @@
       }
       if (cur < 0) for (var j = 0; j < fresh.length; j++) { if (isShown(fresh[j])) { cur = j; break; } }
       if (cur < 0 || cur === target || guard++ > fresh.length + 4) return;
+      var dir = cur < target ? 1 : -1;
+      if (lastDir && dir !== lastDir) return;   // 방향이 뒤집혔다 = 지나쳤다 → 즉시 멈춘다
+      lastDir = dir;
       var key = cur < target ? 'ArrowRight' : 'ArrowLeft';
       document.body.dispatchEvent(new KeyboardEvent('keydown', {
         key: key, code: key, bubbles: true, cancelable: true

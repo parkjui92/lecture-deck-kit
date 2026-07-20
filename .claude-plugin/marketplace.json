@@ -10,7 +10,7 @@
       "name": "lecture-deck-kit",
       "source": "./",
       "description": "강의자료 HTML 덱 제작 + 브라우저 라이브 편집: 고칠 문장을 화면에서 드래그 선택해 지시하면 즉시 반영되고 화면이 자동 갱신된다. 산출물은 항상 클린한 단일 HTML.",
-      "version": "0.9.1"
+      "version": "0.9.2"
     }
   ]
 }

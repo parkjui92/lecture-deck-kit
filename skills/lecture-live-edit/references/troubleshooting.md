@@ -50,18 +50,32 @@ macOS 트랙패드의 **두 손가락 가로 스와이프가 브라우저 뒤로
 문장을 긁을 때 가로 성분이 조금만 섞여도 발동한다. 히스토리에 슬라이드 해시가 쌓여 있으면
 뒤로가기 한 번이 곧 "다른 슬라이드로 점프"가 된다.
 
-v0.9.1에서 양쪽을 막았다.
-- 덱과 오버레이 모두 `html, body { overscroll-behavior-x: none }` 을 건다 → 스와이프 제스처 자체가 무효.
-- 자동 새로고침 시 `location.hash = …` 대신 `history.replaceState` 를 쓴다 → 히스토리가 쌓이지 않는다.
+세 겹으로 막았다. **핵심은 세 번째다.**
+
+1. `html, body { overscroll-behavior-x: none }` — CSS 차원의 1차 방어.
+   **이것만으로는 부족하다.** v0.9.1에서 이것만 넣었다가 증상이 그대로 재현됐다.
+2. 자동 새로고침 시 `location.hash = …` 대신 `history.replaceState` — 반영할 때마다 히스토리에
+   슬라이드 해시가 쌓이던 것을 없앤다(쌓여 있으면 뒤로가기 한 번이 곧 슬라이드 점프가 된다).
+3. **가로 우세 `wheel` 이벤트를 `preventDefault` 로 취소**(v0.9.2) — 트랙패드 스와이프는 결국
+   `deltaX` 가 큰 wheel 이벤트다. 이걸 직접 취소하는 것이 환경에 관계없이 확실하다.
+   세로 스크롤(`|deltaY| ≥ |deltaX|`)과 진짜 가로 스크롤 영역(`overflow-x: auto|scroll`)은 통과시킨다.
 
 여전히 튄다면 확인할 것:
 
 ```js
-getComputedStyle(document.documentElement).overscrollBehaviorX   // 'none' 이어야 한다
+// ① 가로 제스처가 취소되는가 — true 여야 한다
+(() => { const e = new WheelEvent('wheel', {deltaX:-90, bubbles:true, cancelable:true});
+         document.body.dispatchEvent(e); return e.defaultPrevented; })()
+
+// ② 히스토리가 쌓여 있는가 — 반영을 여러 번 했는데도 늘지 않아야 한다
+history.length
 ```
 
-`none` 이 아니면 오래된 덱이다. 덱 CSS의 `html,body` 규칙에 `overscroll-behavior-x:none` 을 추가한다
-(서버를 거쳐 열었다면 오버레이가 이미 걸어 주므로, 파일을 직접 연 경우에만 문제가 된다).
+②가 이미 커져 있다면 **v0.9.2 이전에 열어 둔 탭**이다. 그 탭의 히스토리는 지울 수 없으니
+탭을 새로 열면 깨끗해진다(①이 막고 있어 실사용에는 지장이 없다).
+
+①이 `false` 면 오래된 덱을 서버 없이 파일로 직접 연 경우다. 서버를 거쳐 열면 오버레이가
+가드를 걸어 주므로 해결된다.
 
 ## 새로고침 후 다른 슬라이드로 튄다
 

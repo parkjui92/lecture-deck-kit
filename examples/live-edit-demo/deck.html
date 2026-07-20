@@ -281,6 +281,21 @@ tr:last-child td{border-bottom:0}
   var ovlist=document.getElementById('ovlist'), help=document.getElementById('help');
   var cur=0, jump='';
 
+  // 트랙패드 두 손가락 가로 스와이프가 브라우저 뒤로/앞으로 가기로 먹히는 것을 막는다.
+  // (발표 중 실수로 페이지가 넘어가거나, 문장을 드래그해 선택할 때 튕겨 나가는 것을 방지)
+  window.addEventListener('wheel',function(e){
+    if(Math.abs(e.deltaX)<=Math.abs(e.deltaY)) return;
+    var el=e.target;
+    while(el&&el!==document.body){
+      if(el.scrollWidth>el.clientWidth+1){
+        var ox=getComputedStyle(el).overflowX;
+        if(ox==='auto'||ox==='scroll') return;
+      }
+      el=el.parentElement;
+    }
+    e.preventDefault();
+  },{passive:false,capture:true});
+
   function fit(){
     var pad = window.innerWidth<700 ? 8 : 28;
     var k=Math.min((window.innerWidth-pad*2)/1280,(window.innerHeight-pad*2)/720);
