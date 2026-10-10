@@ -59,6 +59,40 @@ On the deck in your browser: **drag across the sentence** you want changed, clic
 
 Send several in a row if you like. They get collected and applied together, and the page refreshes **once, at the end** — so you never catch it half-finished.
 
+## Make it your own
+
+The default design uses **16:9 slides, a white canvas, blue accents, and Korean sans-serif fonts**. [DESIGN.md](DESIGN.md) (Korean) documents the actual template's colors, typography, spacing, and components, with a teal theme you can copy into your deck.
+
+| What to change | Where in your `deck.html` |
+|---|---|
+| Brand color and tinted backgrounds | `--accent` and `--accent-soft` in both `:root` and the dark theme |
+| Fonts and title sizes | `body` → `font-family`, `.slide > h2`, `.slide.cover h1` |
+| Spacing and card shapes | `.slide` → `padding`, `.card` → `border-radius` and `padding` |
+| Tables and process diagrams | `th, td` spacing and borders, `.flow .step` size and corners |
+
+You can ask for the changes directly:
+
+```text
+Read DESIGN.md and restyle this deck.html.
+Use dark teal #0F766E, Malgun Gothic, 6px card corners, and a plain white cover.
+Place the attached logo only at the bottom right of the cover, no wider than 96px.
+Keep the content and slide IDs. Check both themes for contrast and clipped text.
+```
+
+**The CSS in your deck changes its appearance; editing DESIGN.md alone does not.** Work on your own lecture file. You can also provide an existing PPT or PDF as a reference for colors, fonts, and spacing.
+
+## Need PowerPoint too?
+
+The kit produces HTML and **does not currently include a PPTX exporter**. Separate tools can produce either kind of PowerPoint deck:
+
+| Goal | Method | Tradeoff |
+|---|---|---|
+| Match the browser appearance | Capture each slide as a PNG and place it on a 16:9 slide | Text and tables inside the image are not directly editable |
+| Let colleagues edit the content | Rebuild the HTML as PowerPoint text, tables, and shapes | Line breaks and spacing need adjustment |
+| Print or distribute a PDF | Browser print, `Cmd+P` / `Ctrl+P` | Check pagination in the print preview |
+
+Ask for “a PPT that preserves the HTML appearance” or “a PPT with editable text and tables.” The [PowerPoint and PDF guide](docs/powerpoint.md) (Korean) includes steps, ready-to-use prompts, and code to assemble PNGs into a PPTX. HTML and PowerPoint edits do not sync automatically.
+
 ## How it works
 
 What this plugin is really good at isn't writing prose. It's **not losing track of your edits.**
@@ -79,7 +113,7 @@ The deck doesn't fetch anything from the internet, so **one file is all you need
 
 - **All you need is `python3`.** Nothing to install. The browser window comes from the Claude Code desktop app; if you don't have it, opening `localhost:4601` yourself works exactly the same.
 - **Decks whose slides are generated on the fly by JavaScript** can't be edited this way — there's no sentence in the file to fix.
-- **It doesn't make `.pptx` files.** What you get is HTML.
+- **The default output is HTML.** See the [separate PowerPoint workflow](docs/powerpoint.md) for PPTX; its tools require an additional setup.
 - If an instruction is ambiguous, it asks rather than guessing. Two people editing the same deck at the same time isn't supported.
 - It's shaped around Korean lecture conventions (Korean typography, Korean-language slides).
 - [If setup gives you trouble](docs/runtime-notes.md)
